@@ -12,15 +12,11 @@ app.get('/', function(req, res, next) {
 
 app.get('/new/:url(*)', function (req, res, next) {
   mongo.connect(urldb, function (err, db) {
-    if (err) {
-      console.log("err");
-    } else {
-      console.log("Connected to server")
-
+    if (err) console.log("err"); 
       var collection = db.collection('links');
       var params = req.params.url;
       var local = req.get('host'); + "/";
-      var newLink = function (db, callback) {
+      var newDoc = function (db, callback) {
         collection.findOne({ "url": params }, { short: 1, _id: 0 }, function (err, doc) {
           if (doc != null) {
             res.json({ original_url: params, short_url:doc.short });
@@ -31,13 +27,13 @@ app.get('/new/:url(*)', function (req, res, next) {
               collection.insert([newUrl]);
               res.json({ original_url: params, short_url: shortCode });
             } else{
-              res.json({ error: "Wrong url"});
+              res.json({ error: "error"});
             };
           };
         });
       };
 
-      newLink(db, function () {
+      newDoc(db, function () {
         db.close();
       });
 
@@ -49,15 +45,10 @@ app.get('/new/:url(*)', function (req, res, next) {
 app.get('/:short', function (req, res, next) {
 
  mongo.connect(urldb, function (err, db) {
-    if (err) {
-      console.log("Unable to connect to server", err);
-    } else {
-      console.log("Connected to server")
-
-      var collection = db.collection('links');
+    if (err) console.log("err");
+    var collection = db.collection('links');
       var params = req.params.short;
-
-      var findLink = function (db, callback) {
+      var findUrl = function (db, callback) {
         collection.findOne({ "short": params }, { url: 1, _id: 0 }, function (err, doc) {
           if (doc != null) {
             res.redirect(doc.url);
@@ -67,7 +58,7 @@ app.get('/:short', function (req, res, next) {
         });
       };
 
-      findLink(db, function () {
+      findUrl(db, function () {
         db.close();
       });
 
